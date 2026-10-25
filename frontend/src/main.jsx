@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { Activity, ArrowDownRight, ArrowUpRight, BarChart3, Check, ChevronDown, Clock3, Download, ExternalLink, Grid2X2, Info, Leaf, LoaderCircle, RefreshCw, Search, ShieldCheck, Wind, Zap } from 'lucide-react';
 import './styles.css';
@@ -50,12 +50,29 @@ function ErrorChart({ intervals }) {
 
 function App() {
   const [cutoff, setCutoff] = useState('09:20');
+  const [cutoffOpen, setCutoffOpen] = useState(false);
+  const cutoffRef = useRef(null);
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [refresh, setRefresh] = useState(0);
   const [range, setRange] = useState('daily');
   const [query, setQuery] = useState('');
   const [pageError, setPageError] = useState('');
+
+  useEffect(() => {
+    const closeOnOutsideClick = event => {
+      if (!cutoffRef.current?.contains(event.target)) setCutoffOpen(false);
+    };
+    const closeOnEscape = event => {
+      if (event.key === 'Escape') setCutoffOpen(false);
+    };
+    document.addEventListener('pointerdown', closeOnOutsideClick);
+    document.addEventListener('keydown', closeOnEscape);
+    return () => {
+      document.removeEventListener('pointerdown', closeOnOutsideClick);
+      document.removeEventListener('keydown', closeOnEscape);
+    };
+  }, []);
 
   useEffect(() => {
     let active = true;
@@ -107,7 +124,7 @@ function App() {
 
     <main className="main-content">
       <header className="topbar"><div className="breadcrumb"><span>Workspace</span><span className="crumb-slash">/</span><b>Wind forecast overview</b></div><div className="top-actions"><span className="period-tag"><span className="period-dot"/>ANALYSIS PERIOD&nbsp; · &nbsp;JAN 2026</span><button className="icon-button" title="Refresh data" onClick={()=>setRefresh(x=>x+1)}><RefreshCw size={17}/></button><button className="help-button"><Info size={16}/> Methodology</button></div></header>
-      <section className="page-heading"><div><div className="eyebrow"><span className="eyebrow-line"/>PROCUREMENT INTELLIGENCE</div><h1>Wind forecast overview</h1><p className="intro">See the wind generation picture your team could have had before day-ahead procurement.</p></div><div className="heading-controls"><label className="control-label">DECISION CUTOFF <span title="Default aligned with GB 60-minute day-ahead order-book close">ⓘ</span></label><div className="cutoff-control"><Clock3 size={16}/><select value={cutoff} onChange={e=>setCutoff(e.target.value)}><option value="09:20">09:20 UK time</option><option value="10:00">10:00 UK time</option><option value="12:00">12:00 UK time</option><option value="15:30">15:30 UK time</option></select><ChevronDown size={14}/></div></div></section>
+      <section className="page-heading"><div><div className="eyebrow"><span className="eyebrow-line"/>PROCUREMENT INTELLIGENCE</div><h1>Wind forecast overview</h1><p className="intro">See the wind generation picture your team could have had before day-ahead procurement.</p></div><div className="heading-controls" ref={cutoffRef}><label className="control-label">DECISION CUTOFF <span title="Default aligned with GB 60-minute day-ahead order-book close">ⓘ</span></label><div className="cutoff-control"><Clock3 size={16}/><button className="cutoff-trigger" type="button" aria-haspopup="listbox" aria-expanded={cutoffOpen} onClick={()=>setCutoffOpen(open=>!open)}>{cutoff} UK time</button><ChevronDown size={14}/>{cutoffOpen && <div className="cutoff-options" role="listbox" aria-label="Decision cutoff">{['09:20','10:00','12:00','15:30'].map(option=><button key={option} type="button" role="option" aria-selected={cutoff===option} className={cutoff===option?'selected':''} onClick={()=>{setCutoff(option);setCutoffOpen(false)}}>{option} UK time</button>)}</div>}</div></div></section>
       <div className="decision-banner"><div className="banner-icon"><Zap size={19}/></div><div><b>Decision-time view</b><span>Showing the latest wind forecast published by <strong>{cutoff} on the day before delivery</strong>, matched to actual generation for January 2026.</span></div><span className="banner-flag"><Check size={13}/> D−1 VINTAGE</span></div>
 
       {pageError && <div className="error-state"><div className="error-state-icon"><Info size={19}/></div><div><b>Unable to load Elexon data</b><p>{pageError} No sample values are being shown. Check your connection and retry.</p></div><button onClick={()=>setRefresh(x=>x+1)}><RefreshCw size={14}/> Retry</button></div>}
@@ -137,7 +154,6 @@ function App() {
 }
 
 createRoot(document.getElementById('root')).render(<App/>);
-
 
 
 
