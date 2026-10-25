@@ -30,7 +30,7 @@ Open [http://localhost:8080](http://localhost:8080). The container serves the Re
 
 ### Without Docker
 
-Backend (Python 3.11+):
+Backend (Python 3.12):
 
 ```bash
 cd backend
@@ -103,13 +103,15 @@ AI tools assisted with implementation planning, code review, and drafting tests/
 
 ## Deploy on Vercel
 
-The project is configured for Vercel's Python runtime. Its build script creates the React production bundle and places it beside the FastAPI app; Vercel then serves the UI and API from the same deployment. The FastAPI function is configured for up to 60 seconds because the initial Elexon data request can take longer than a short request.
+The project is deployed as a single Vercel project using Vercel's Python runtime. The root `pyproject.toml` declares Python 3.12 and the backend dependencies, configures `backend.app.main:app` as the entrypoint, and runs `vercel_build.py`. That build script creates the React production bundle and places it beside the FastAPI app, so the UI and API are served from the same deployment. `vercel.json` allows the FastAPI function to run for up to 60 seconds because the initial Elexon data request can take longer than a short request.
 
 1. Push this project to a GitHub repository. For the assignment, use the requested anonymous public repository name.
 2. Sign in to [Vercel](https://vercel.com/) and choose **Add New → Project**.
-3. Import the repository and leave the project root directory set to the repository root. Do not set it to `frontend` or `backend`.
-4. Deploy using the detected Python configuration. The root `pyproject.toml`, `requirements.txt`, and `vercel.json` configure the FastAPI entrypoint, build and function duration.
+3. Import the repository as one project. Set the root directory to `./` and select the **Python** preset. Do not import the `frontend` and `backend` folders as separate services.
+4. Deploy. Vercel reads the Python version, dependencies, entrypoint, and build script from the root `pyproject.toml`; `vercel.json` sets the function duration.
 5. Open the deployment URL and verify the dashboard, `/api/health`, and `/api/analysis?month=2026-01&cutoff=09:20`.
+
+The current production deployment is [gridbricks-wind-desk.vercel.app](https://gridbricks-wind-desk.vercel.app/).
 
 Alternatively, with the Vercel CLI installed and authenticated, run from the project root:
 
@@ -118,4 +120,4 @@ npx vercel
 npx vercel --prod
 ```
 
-Vercel's [Hobby plan](https://vercel.com/pricing) is free for eligible personal projects, subject to its usage limits and terms. The Vercel deployment is separate from Docker: use Docker for a local, containerized run, and Vercel for the public URL. Add your final public deployment URL here after deployment and verify it in a private/incognito window.
+Vercel's [Hobby plan](https://vercel.com/pricing) is free for eligible personal projects, subject to its usage limits and terms. The Vercel deployment is separate from Docker: use Docker for a local, containerized run, and Vercel for the public URL. Verify the deployment in a private/incognito window after publishing changes.
