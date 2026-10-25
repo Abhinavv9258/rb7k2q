@@ -1,0 +1,10 @@
+[project]
+name = "gridbricks-wind-desk"
+version = "1.0.0"
+requires-python = ">=3.12,<3.13"
+
+[tool.vercel]
+entrypoint = "backend.app.main:app"
+
+[tool.vercel.scripts]
+build = "python vercel_build.py"

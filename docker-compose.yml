@@ -1,0 +1,10 @@
+services:
+  wind-desk:
+    image: gridbricks-wind-desk
+    container_name: gridbricks-wind-desk
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      PORT: 8080
+    restart: unless-stopped
